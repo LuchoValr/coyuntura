@@ -95,17 +95,36 @@ print(ibr)
 #print(data2)
 
 ##Exportar datos
-#write.csv(trm, "trm.csv")
-write.csv(pib_dia, "pib.csv")
+write.csv(trm, "trm.csv")
 write.csv(M1_dia, "M1.csv")
 #write.csv(colcap, "colcap.csv")
 #write.csv(ibr, "ibr.csv")
 write.csv(infla_dia1, "inflacion.csv")
 library(quantmod)
-oil <- as.data.frame(getSymbols("cl=f"))
-print(oil)
-getSymbols("NG=F")
-getSymbols.yahoo("CL=F",from = "2022-01-01",
-                        to = "2022-12-31")
-print(CL=F)
-write.csv(CL=F, "oil.csv")
+library(Quandl)
+library(tidyverse)
+
+getSymbols("CL=F", src = "yahoo")
+oil <- `CL=F`["2022-01-01::2022-12-31"]
+oil <- data.frame(oil)
+oil <- oil %>% 
+  rownames_to_column(var = "Index") %>%
+  rename(date = Index)
+View(oil)
+getSymbols("NG=f", src = "yahoo")
+gas <- `NG=F`["2022-01-01::2022-12-31"]
+gas <- data.frame(gas)
+gas <- gas %>% 
+  rownames_to_column(var = "Index") %>%
+  rename(date = Index)
+View(oil)
+
+write.csv(gas, "gas.csv")
+write.csv(oil, "oil.csv")
+
+
+
+
+
+
+

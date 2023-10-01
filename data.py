@@ -52,26 +52,26 @@ print(ecop)
 ecop = ecop.rename({"Date" : "date"}, axis = 1)
 ecop = ecop
 
-oil = pd.read_csv('Datos históricos Futuros petróleo crudo WTI.csv', sep=",") #WTI
+oil = pd.read_csv('oil.csv', sep=",")
 print(oil)
 
-oil = oil.rename({"Fecha" : "date"}, axis = 1)
-oil['date'] = [x.replace('.','-') for x in oil['date']]
+#oil['date'] = [x.replace('.','-') for x in oil['date']]
 oil['date'] = pd.to_datetime(oil['date'])
-oil = oil.rename({'Último' : 'oil'}, axis = 1)
+oil = oil.rename({'CL.F.Close' : 'oil'}, axis = 1)
+oil = oil.drop(['Unnamed: 0'], axis = 1)
 
 
-gas = pd.read_csv('Datos históricos Futuros gas natural.csv') #Futuros del gas
+gas = pd.read_csv('gas.csv') #Futuros del gas
 print(gas)
-gas = gas.rename({"Fecha" : "date"}, axis = 1)
-gas['date'] = [x.replace('.','-') for x in gas['date']]
+#gas = gas.rename({"Fecha" : "date"}, axis = 1)
+#gas['date'] = [x.replace('.','-') for x in gas['date']]
 gas['date'] = pd.to_datetime(gas['date'])
-gas = gas.rename({'Último' : 'gas'}, axis = 1)
+gas = gas.rename({'NG.F.Close' : 'gas'}, axis = 1)
+gas = gas.drop(['Unnamed: 0'], axis = 1)
 
 
-
-data1 = pd.read_excel('data1.xlsx')
-data1 = data1.drop(['oil', 'gas'], axis = 1)
+#data1 = pd.read_excel('data1.xlsx')
+#data1 = data1.drop(['oil', 'gas'], axis = 1)
 data1 = data1.merge(ecop[['date','Close']])
 print(data1)
 data1['date'] = pd.to_datetime(data1['date'])
@@ -94,9 +94,9 @@ print(filas_con_varios_nulos)
 print(data1)
 data1.info()
 
-for col in ['oil', 'gas']:
-        data1[col] = data1[col].str.replace(',', '.')
-        data1[col] = data1[col].astype(float)
+#for col in ['oil', 'gas']:
+#        data1[col] = data1[col].str.replace(',', '.')
+#        data1[col] = data1[col].astype(float)
 
 
 for col in ['oil', 'gas']:
@@ -104,4 +104,5 @@ for col in ['oil', 'gas']:
 data1 = data1.drop(['Unnamed: 0'], axis = 1)
 print(data1)
 
-data1.to_excel('Base.xlsx')
+data1.to_excel('Base1.xlsx')
+data1.to_csv('Base.csv')
