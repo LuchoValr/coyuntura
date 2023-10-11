@@ -1,5 +1,6 @@
 import pandas as pd
-
+from datetime import datetime
+import nasdaqdatalink as nasdaq
 
 colcap = pd.read_csv("C:/Users/lucho/OneDrive/Escritorio/coyuntura economica/datos/join/colcap.csv")
 print(colcap)
@@ -36,7 +37,6 @@ print(data1)
 
 #import pandas_datareader.data as web
 #from pandas_datareader.nasdaq_trader import get_nasdaq_symbols
-from datetime import datetime
 #import yfinance as yfin
 #yfin.pdr_override()
 #start = datetime(2022, 1, 1)
@@ -50,15 +50,25 @@ from datetime import datetime
 ecop = pd.read_csv('ECOPETROL.CL.csv')
 print(ecop)
 ecop = ecop.rename({"Date" : "date"}, axis = 1)
-ecop = ecop
 
-oil = pd.read_csv('oil.csv', sep=",")
+#oil = nasdaq.get('EIA/PET_RWTC_D', start_date="2022-01-01", end_date="2022-12-31")
+#oil = pd.DataFrame(oil).reset_index()
+#oil['Date'] = pd.to_datetime(oil['Date'])
+#
+#print(oil)
+#oil.info()
+
+oil = pd.read_excel('RBRTEd.xls', sheet_name = "Data 1", skiprows = lambda x: x in [0, 1])
+oil['Date'] = pd.to_datetime(oil['Date'])
+oil = oil[(oil['Date']>='2022-01-01') & (oil['Date'] <= '2022-12-31')]
+oil = oil.rename({'Europe Brent Spot Price FOB (Dollars per Barrel)': 'oil', 'Date' : 'date'}, axis = 1)
 print(oil)
-
-#oil['date'] = [x.replace('.','-') for x in oil['date']]
-oil['date'] = pd.to_datetime(oil['date'])
-oil = oil.rename({'CL.F.Close' : 'oil'}, axis = 1)
-oil = oil.drop(['Unnamed: 0'], axis = 1)
+#print(oil)
+#
+##oil['date'] = [x.replace('.','-') for x in oil['date']]
+#oil['date'] = pd.to_datetime(oil['date'])
+#oil = oil.rename({'CL.F.Close' : 'oil'}, axis = 1)
+#oil = oil.drop(['Unnamed: 0'], axis = 1)
 
 
 gas = pd.read_csv('gas.csv') #Futuros del gas
@@ -69,7 +79,14 @@ gas['date'] = pd.to_datetime(gas['date'])
 gas = gas.rename({'NG.F.Close' : 'gas'}, axis = 1)
 gas = gas.drop(['Unnamed: 0'], axis = 1)
 
+#Embi
+embi = pd.read_excel('Serie_Historica_Spread_del_EMBI.xlsx', skiprows = lambda x: x in [0, 3979, 3980, 3981, 3982, 3983, 3984, 3985, 3986])
 
+embi['Fecha'] = pd.to_datetime(embi['Fecha'])
+embi = embi.rename({'Fecha' : 'date'}, axis = 1)
+embi = embi[['date', 'Colombia']]
+embi = embi[(embi['date']>='2022-01-01') & (embi['date'] <= '2022-12-31')]
+print(embi)
 #data1 = pd.read_excel('data1.xlsx')
 #data1 = data1.drop(['oil', 'gas'], axis = 1)
 data1 = data1.merge(ecop[['date','Close']])
@@ -79,10 +96,11 @@ data1 = data1.rename({"Close" : "ecop"}, axis = 1)
 data2 = data1.copy()
 data1 = data1.merge(oil[['date', 'oil']], how = 'outer',on = 'date')
 data1 = data1.merge(gas[['date','gas']], how = 'outer', on = 'date')
-
+data1 = data1.merge(embi, how = 'outer')
 #data5 = data5.dropna()
 #data1 = data1.sort_values(by = ['date']).reset_index()
 data1 = data1.dropna(subset = ['trm'])
+data1 = data1.rename({'Colombia':'embi'}, axis = 1)
 print(data1)
 data1.info()
 
@@ -106,3 +124,5 @@ print(data1)
 
 data1.to_excel('Base1.xlsx')
 data1.to_csv('Base.csv')
+
+
