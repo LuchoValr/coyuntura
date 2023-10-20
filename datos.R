@@ -1,11 +1,8 @@
-#####Metodo de interpolacion####
-
 library(tidyverse)
-library(tempdisagg)
-library(tsbox)
+library(dplyr)
+#library(timedisagg)
 library(tseries)
-library(urca)
-library(strucchange)
+#####Metodo de interpolacion####
 
 M1_men <- read.csv("M1_mensual.csv", sep = ";")
 
@@ -64,6 +61,20 @@ pib_dia <- as.data.frame(predict(pib_dia))
 print(pib_dia)
 sum(pib_dia)
 plot.ts(pib_dia)
+
+#Risk
+risk <- read.csv("risk_b.csv", sep = ";")
+
+risk$date <- as.Date(risk$date, format = "%d/%m/%Y")
+str(risk)
+risk_dia <- td(risk$agregate_risk ~ 1, conversion = "mean",
+              to = 61, method =  "chow-lin-minrss-ecotrim")
+risk_dia <- as.data.frame(predict(risk_dia))
+print(risk_dia)
+sum(risk_dia)
+plot.ts(risk_dia)
+
+
 #Merge
 #trm
 trm <- read.csv("TRM_diario.csv", sep = ";")
@@ -105,6 +116,9 @@ write.csv(M1_dia, "M1.csv")
 #write.csv(colcap, "colcap.csv")
 #write.csv(ibr, "ibr.csv")
 write.csv(infla_dia1, "inflacion.csv")
+write.csv(risk_dia, "risk.csv")
+
+####Prueba datos de commodities####
 library(quantmod)
 library(Quandl)
 library(tidyverse)
@@ -131,6 +145,7 @@ write.csv(oil, "oil.csv")
 #Dicky-fuller
 
 datos <- read.csv('Base.csv')
+str(datos)
 datos <- na.omit(datos)
 adf.test(datos$colcap, k =0)
 adf.test(datos$ibr, k = 0)
@@ -139,7 +154,8 @@ adf.test(datos$predict.M1_dia., k = 0)
 adf.test(datos$predict.pib_dia., k = 0)
 adf.test(datos$trm, k = 0)
 adf.test(datos$ecop, k = 0)
-adf.test(datos$oil_COP, k = 0)
+adf.test(datos$brent_COP, k = 0)
+adf.test(datos$wti_COP, k = 0)
 adf.test(datos$gas_COP, k = 0)
 adf.test(datos$embi, k = 0)
 
@@ -152,7 +168,8 @@ pp.test(datos$predict.pib_dia.)
 pp.test(datos$trm)
 pp.test(datos$ecop)
 pp.test(datos$embi)
-pp.test(datos$oil_COP)
+pp.test(datos$brent_COP)
+pp.test(datos$wti_COP)
 pp.test(datos$trm)
 
 for (col in colnames(datos)[-c(1, 2)]) {
@@ -163,7 +180,7 @@ for (col in colnames(datos)[-c(1, 2)]) {
 #  datos[[paste0(col, "_diff")]] <- NA
 #}
 
-for (col in colnames(datos)[-c(1, 2)]) {
+for (col in colnames(datos)[-c(1, 2, 9, 15)]) {
   datos[[paste0(col, "_diff")]] <- c(NA, diff(datos[[col]]))
 }
 
@@ -181,7 +198,7 @@ adf.test(datos$pib_diff2, k = 0)
 adf.test(datos$infla, k = 0)
 adf.test(datos$trm_diff, k = 0)
 adf.test(datos$ecop_diff, k = 0)
-adf.test(datos$oil_COP_diff, k = 0)
+adf.test(datos$brent_COP_diff, k = 0)
 adf.test(datos$gas_COP_diff, k = 0)
 adf.test(datos$embi_diff, k = 0)
 
@@ -194,9 +211,6 @@ pp.test(datos$pib_diff2)
 pp.test(datos$trm_diff)
 pp.test(datos$ecop_diff)
 pp.test(datos$embi_diff)
-pp.test(datos$oil_COP_diff)
+pp.test(datos$brent_COP_diff)
 pp.test(datos$trm_diff)
 
-mean(datos$pib_diff2)
-
-breakpoints()

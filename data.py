@@ -48,8 +48,11 @@ print(data1)
 #oil = web.DataReader('BZ=F', 'yahoo', start, end)
 
 ecop = pd.read_csv('ECOPETROL.CL.csv')
+ecop['Date'] = pd.to_datetime(ecop['Date'])
+
 print(ecop)
-ecop = ecop.rename({"Date" : "date"}, axis = 1)
+ecop = ecop.rename({"Date" : "date", "Close" : "ecop"}, axis = 1)
+
 
 #oil = nasdaq.get('EIA/PET_RWTC_D', start_date="2022-01-01", end_date="2022-12-31")
 #oil = pd.DataFrame(oil).reset_index()
@@ -58,11 +61,13 @@ ecop = ecop.rename({"Date" : "date"}, axis = 1)
 #print(oil)
 #oil.info()
 
-oil = pd.read_excel('RBRTEd.xls', sheet_name = "Data 1", skiprows = lambda x: x in [0, 1])
-oil['Date'] = pd.to_datetime(oil['Date'])
-oil = oil[(oil['Date']>='2022-01-01') & (oil['Date'] <= '2022-12-31')]
-oil = oil.rename({'Europe Brent Spot Price FOB (Dollars per Barrel)': 'oil', 'Date' : 'date'}, axis = 1)
-print(oil)
+wti = pd.read_excel('datos_wti_risk.xlsx', sheet_name = "wti")
+wti['date'] = pd.to_datetime(wti['date'])
+print(wti)
+
+brent = pd.read_excel('brent.xlsx')
+brent['date'] = pd.to_datetime(brent['date'])
+print(brent)
 #print(oil)
 #
 ##oil['date'] = [x.replace('.','-') for x in oil['date']]
@@ -86,28 +91,30 @@ embi['Fecha'] = pd.to_datetime(embi['Fecha'])
 embi = embi.rename({'Fecha' : 'date'}, axis = 1)
 embi = embi[['date', 'Colombia']]
 embi = embi[(embi['date']>='2022-01-01') & (embi['date'] <= '2022-12-31')]
+embi['Colombia'] = embi['Colombia']*100
 print(embi)
 #data1 = pd.read_excel('data1.xlsx')
 #data1 = data1.drop(['oil', 'gas'], axis = 1)
-data1 = data1.merge(ecop[['date','Close']])
+data1 = data1.merge(ecop[['date', 'ecop']], how = 'outer', on = 'date')
 print(data1)
 data1['date'] = pd.to_datetime(data1['date'])
 data1 = data1.rename({"Close" : "ecop"}, axis = 1)
 data2 = data1.copy()
-data1 = data1.merge(oil[['date', 'oil']], how = 'outer',on = 'date')
+data1 = data1.merge(wti, how = 'outer', on = 'date')
+data1 = data1.merge(brent, how = 'outer', on = 'date')
 data1 = data1.merge(gas[['date','gas']], how = 'outer', on = 'date')
 data1 = data1.merge(embi, how = 'outer')
 #data5 = data5.dropna()
 #data1 = data1.sort_values(by = ['date']).reset_index()
 data1 = data1.dropna(subset = ['trm'])
-data1 = data1.rename({'Colombia':'embi'}, axis = 1)
+data1 = data1.rename({'Colombia':'embi', 'wit':'wti'}, axis = 1)
 print(data1)
 data1.info()
 
 
-num_nulos_por_fila = data1.isna().sum(axis=1)
-filas_con_varios_nulos = data1[num_nulos_por_fila > 1]
-print(filas_con_varios_nulos)
+#num_nulos_por_fila = data1.isna().sum(axis=1)
+#filas_con_varios_nulos = data1[num_nulos_por_fila > 1
+#print(filas_con_varios_nulos)
 
 print(data1)
 data1.info()
@@ -117,7 +124,7 @@ data1.info()
 #        data1[col] = data1[col].astype(float)
 
 
-for col in ['oil', 'gas']:
+for col in ['brent', 'wti', 'gas']:
             data1[col+'_COP'] = data1['trm'] * data1[col]
 data1 = data1.drop(['Unnamed: 0'], axis = 1)
 print(data1)
